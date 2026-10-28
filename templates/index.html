@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediGuide — AI Specialist Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f9f8; --surface: #ffffff; --surface2: #f8fffe;
+  --border: #d1e8e5; --border2: #e2f0ee;
+  --text: #0f2027; --text2: #4a6572; --text3: #8aa5ad;
+  --teal: #0d9488; --teal2: #0f766e; --teal3: #ccfbf1;
+  --low: #16a34a; --low-bg: #dcfce7;
+  --medium: #d97706; --medium-bg: #fef3c7;
+  --high: #dc2626; --high-bg: #fee2e2;
+  --emergency: #be123c; --emergency-bg: #ffe4e6;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.10);
+  --radius: 16px; --radius-sm: 10px;
+}
+[data-theme="dark"] {
+  --bg: #0a1628; --surface: #111f35; --surface2: #162440;
+  --border: #1e3a5f; --border2: #1a3050;
+  --text: #e8f4f8; --text2: #8ab4c4; --text3: #4a7a8a;
+  --teal: #2dd4bf; --teal2: #14b8a6; --teal3: #0d3d38;
+  --low-bg: #052e16; --medium-bg: #1c1400; --high-bg: #1f0a0a; --emergency-bg: #1f0a14;
+  --shadow: 0 1px 3px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.6; min-height: 100vh; transition: background .3s, color .3s; }
+
+/* HEADER */
+header {
+  background: linear-gradient(135deg, #0d9488, #0f766e 60%, #065f46);
+  padding: 0 24px; height: 64px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 20px rgba(13,148,136,.4);
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.logo-circle { width: 38px; height: 38px; background: rgba(255,255,255,.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.header-title { font-family: Fraunces, serif; font-size: 1.3rem; color: #fff; font-weight: 600; }
+.header-sub { font-size: .75rem; color: rgba(255,255,255,.7); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.model-select {
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+  color: #fff; border-radius: 8px; padding: 6px 10px; font-size: .78rem;
+  cursor: pointer; outline: none;
+}
+.model-select option { background: #0f766e; color: #fff; }
+.theme-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.15); color: #fff; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: background .2s;
+}
+.theme-btn:hover { background: rgba(255,255,255,.25); }
+
+/* LAYOUT */
+.layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+@media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .sidebar { order: -1; } }
+
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+
+/* INPUT SECTION */
+.input-label { font-weight: 600; font-size: .95rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+textarea {
+  width: 100%; min-height: 130px; padding: 14px; font: inherit; font-size: .92rem;
+  color: var(--text); background: var(--surface2); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); resize: vertical; transition: border-color .2s, background .2s;
+}
+textarea:focus { outline: none; border-color: var(--teal); background: var(--surface); }
+.input-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 8px; }
+#charcount { font-size: .78rem; color: var(--text3); }
+.btn-row { display: flex; gap: 8px; }
+.btn {
+  padding: 10px 20px; font: inherit; font-weight: 600; font-size: .88rem;
+  border: 0; border-radius: 8px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 6px;
+}
+.btn-primary { background: var(--teal); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--teal2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,148,136,.35); }
+.btn-primary:disabled { opacity: .6; cursor: wait; }
+.btn-secondary { background: var(--border2); color: var(--text2); }
+.btn-secondary:hover { background: var(--border); }
+.btn-voice { background: var(--teal3); color: var(--teal2); border: 1px solid var(--teal); }
+.btn-voice.recording { background: #fee2e2; color: #dc2626; border-color: #dc2626; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+
+/* CHIPS */
+.chips-label { font-size: .75rem; color: var(--text3); font-weight: 500; margin: 16px 0 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.chip {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+  padding: 5px 12px; font-size: .78rem; cursor: pointer; color: var(--teal);
+  font-weight: 500; transition: all .2s;
+}
+.chip:hover { background: var(--teal); color: #fff; border-color: var(--teal); }
+
+/* ERROR */
+#error { color: var(--high); font-size: .85rem; margin-top: 8px; font-weight: 500; min-height: 1.2em; }
+
+/* LOADER */
+.loader { display: none; text-align: center; padding: 40px 20px; }
+.loader.active { display: block; }
+.pulse-ring { width: 56px; height: 56px; margin: 0 auto 16px; position: relative; }
+.pulse-ring::before, .pulse-ring::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 3px solid var(--teal); animation: ripple 1.4s ease-out infinite;
+}
+.pulse-ring::after { animation-delay: .7s; }
+.pulse-ring span { position: absolute; inset: 8px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+@keyframes ripple { 0% { transform: scale(.8); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+.loader p { color: var(--text2); font-size: .88rem; }
+.loader-steps { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+.loader-step { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.loader-step.active { background: var(--teal); }
+
+/* RESULT CARD */
+.result-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow-lg); animation: slideUp .4s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.result-header { padding: 24px; border-bottom: 1px solid var(--border); }
+.urgency-bar { height: 4px; margin: -24px -24px 20px; }
+.urgency-bar.low { background: linear-gradient(90deg, var(--low), #4ade80); }
+.urgency-bar.medium { background: linear-gradient(90deg, var(--medium), #fbbf24); }
+.urgency-bar.high { background: linear-gradient(90deg, var(--high), #f87171); }
+.urgency-bar.emergency { background: linear-gradient(90deg, var(--emergency), #fb7185); animation: flash .8s infinite; }
+@keyframes flash { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+.specialist-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.specialist-icon { font-size: 2.5rem; line-height: 1; }
+.specialist-info { flex: 1; }
+.specialist-name { font-family: Fraunces, serif; font-size: 1.8rem; font-weight: 600; line-height: 1.1; }
+.alt-spec { font-size: .82rem; color: var(--text2); margin-top: 4px; }
+.badges { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.badge { padding: 4px 12px; border-radius: 20px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.badge-urgency.low { background: var(--low-bg); color: var(--low); }
+.badge-urgency.medium { background: var(--medium-bg); color: var(--medium); }
+.badge-urgency.high { background: var(--high-bg); color: var(--high); }
+.badge-urgency.emergency { background: var(--emergency-bg); color: var(--emergency); }
+.badge-conf { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.badge-model { background: var(--teal3); color: var(--teal2); }
+.reason { color: var(--text2); font-size: .9rem; line-height: 1.7; margin-top: 14px; }
+
+.result-body { padding: 20px 24px; }
+.section { margin-bottom: 20px; }
+.section-head { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 11px; font-size: .82rem; color: var(--text); }
+.list-items { list-style: none; }
+.list-items li { padding: 8px 0 8px 26px; position: relative; font-size: .88rem; color: var(--text2); border-bottom: 1px solid var(--border2); }
+.list-items li:last-child { border-bottom: none; }
+.list-items li::before { position: absolute; left: 0; }
+.list-items.care li::before { content: "✓"; color: var(--low); font-weight: 700; }
+.list-items.warn li::before { content: "⚠"; font-size: .8rem; }
+.list-items.qs li::before { content: "?"; color: var(--teal); font-weight: 700; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+
+.follow-up-box { background: var(--teal3); border: 1px solid var(--teal); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; font-size: .88rem; color: var(--teal2); display: flex; gap: 10px; align-items: flex-start; }
+.disclaimer-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: .78rem; color: #78350f; }
+[data-theme="dark"] .disclaimer-box { background: #1c1400; border-color: #78350f; color: #fbbf24; }
+.model-tag { font-size: .72rem; color: var(--text3); margin-top: 10px; text-align: right; }
+
+/* CHAT */
+.chat-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px; }
+.chat-title { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); margin-bottom: 12px; }
+.chat-messages { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; padding-right: 4px; }
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.msg { padding: 10px 14px; border-radius: 12px; font-size: .86rem; line-height: 1.5; max-width: 88%; }
+.msg.user { background: var(--teal); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg.bot { background: var(--surface2); color: var(--text); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+.msg.typing { color: var(--text3); font-style: italic; }
+.chat-input-row { display: flex; gap: 8px; }
+.chat-input {
+  flex: 1; padding: 10px 14px; font: inherit; font-size: .88rem;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); outline: none; transition: border-color .2s;
+}
+.chat-input:focus { border-color: var(--teal); }
+.chat-send { padding: 10px 16px; background: var(--teal); color: #fff; border: 0; border-radius: 8px; cursor: pointer; font-size: .88rem; font-weight: 600; transition: background .2s; }
+.chat-send:hover { background: var(--teal2); }
+
+/* SIDEBAR */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+.sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.sidebar-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); margin-bottom: 12px; }
+.history-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: 8px; cursor: pointer; transition: background .2s; margin-bottom: 6px;
+}
+.history-item:hover { background: var(--surface2); }
+.history-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.history-dot.low { background: var(--low); }
+.history-dot.medium { background: var(--medium); }
+.history-dot.high { background: var(--high); }
+.history-dot.emergency { background: var(--emergency); }
+.history-text { flex: 1; min-width: 0; }
+.history-sym { font-size: .82rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-meta { font-size: .72rem; color: var(--text3); }
+.tip-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border2); font-size: .82rem; color: var(--text2); }
+.tip-item:last-child { border-bottom: none; }
+.tip-icon { font-size: 1rem; flex-shrink: 0; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.stat-num { font-family: Fraunces, serif; font-size: 1.6rem; font-weight: 600; color: var(--teal); }
+.stat-label { font-size: .72rem; color: var(--text3); }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <div class="logo-circle">🏥</div>
+    <div>
+      <div class="header-title">MediGuide</div>
+      <div class="header-sub">AI-powered specialist finder</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <select class="model-select" id="modelSelect">
+      {% for id, name in models.items() %}
+      <option value="{{ id }}">{{ name }}</option>
+      {% endfor %}
+    </select>
+    <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- MAIN COLUMN -->
+  <div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="input-label">🩺 Describe your symptoms</div>
+      <textarea id="symptoms" maxlength="1500" placeholder="e.g. I have had a severe headache on one side for 2 days with nausea and sensitivity to light..."></textarea>
+      <div class="input-footer">
+        <span id="charcount">0 / 1500</span>
+        <div class="btn-row">
+          <button class="btn btn-voice" id="voiceBtn" title="Voice input">🎤 Voice</button>
+          <button class="btn btn-secondary" id="clearBtn" style="display:none" onclick="clearAll()">✕ Clear</button>
+          <button class="btn btn-primary" id="go">🔍 Find Specialist</button>
+        </div>
+      </div>
+      <div class="chips-label">Quick examples — click to try:</div>
+      <div class="chips" id="chips"></div>
+      <div id="error" role="alert"></div>
+    </div>
+
+    <div class="loader" id="loader">
+      <div class="pulse-ring"><span>🔬</span></div>
+      <p id="loaderText">Analyzing your symptoms…</p>
+      <div class="loader-steps">
+        <div class="loader-step active" id="s1"></div>
+        <div class="loader-step" id="s2"></div>
+        <div class="loader-step" id="s3"></div>
+      </div>
+    </div>
+
+    <div id="result" aria-live="polite"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">📊 Session Stats</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Queries</div></div>
+        <div class="stat-box"><div class="stat-num" id="statEmergency">0</div><div class="stat-label">Urgent</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">🕐 Recent Queries</div>
+      <div id="historyList"><div style="font-size:.82rem;color:var(--text3)">No queries yet.</div></div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">💡 Tips for Better Results</div>
+      <div class="tip-item"><span class="tip-icon">📍</span><span>Mention where exactly the pain or discomfort is</span></div>
+      <div class="tip-item"><span class="tip-icon">⏱️</span><span>Say how long you've had the symptoms</span></div>
+      <div class="tip-item"><span class="tip-icon">📈</span><span>Describe if it's getting better or worse</span></div>
+      <div class="tip-item"><span class="tip-icon">🔗</span><span>Mention any related symptoms together</span></div>
+      <div class="tip-item"><span class="tip-icon">🌡️</span><span>Include fever, nausea, or other signs</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">🚨 Emergency Numbers</div>
+      <div class="tip-item"><span class="tip-icon">🇮🇳</span><span><strong>112</strong> — National Emergency<br><strong>108</strong> — Ambulance</span></div>
+      <div class="tip-item"><span class="tip-icon">🏥</span><span>Go to nearest ER for chest pain, stroke, or breathing trouble</span></div>
+    </div>
+  </div>
+</div>
+<script>
+const go = document.getElementById("go");
+const box = document.getElementById("symptoms");
+const err = document.getElementById("error");
+const out = document.getElementById("result");
+const loader = document.getElementById("loader");
+
+const EXAMPLES = [
+  "Severe headache on one side with nausea and light sensitivity",
+  "Knee pain and swelling after running",
+  "Skin rash with itching for 3 days",
+  "Stomach pain after eating with bloating",
+  "Blurry vision and eye strain",
+  "Anxiety, trouble sleeping, low mood for weeks",
+  "Frequent urination and excessive thirst",
+  "Lower back pain radiating down the leg",
+  "Sore throat, fever and body ache for 2 days",
+  "Chest tightness and shortness of breath on exertion",
+];
+
+const URGENCY_LABEL = { low:"✅ Low Urgency", medium:"⚠️ See Doctor Soon", high:"🔴 See Doctor Today", emergency:"🚨 Emergency" };
+const CONF_LABEL = { high:"High Confidence", medium:"Medium Confidence", low:"Low Confidence" };
+
+let sessionHistory = [], queryHistory = [], stats = { total: 0, urgent: 0 };
+
+document.getElementById("chips").innerHTML = EXAMPLES
+  .map(e => `<span class="chip" onclick="useExample(this)">${e}</span>`).join("");
+
+function useExample(el) { box.value = el.textContent; updateCount(); box.focus(); }
+
+box.addEventListener("input", updateCount);
+function updateCount() {
+  document.getElementById("charcount").textContent = `${box.value.length} / 1500`;
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function list(items, cls) {
+  return `<ul class="list-items ${cls}">${(items||[]).map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`;
+}
+function tags(items) {
+  return `<div class="tag-row">${(items||[]).map(i=>`<span class="tag">${esc(i)}</span>`).join("")}</div>`;
+}
+
+function renderCard(d) {
+  return `
+  <div class="result-card">
+    <div class="result-header">
+      <div class="urgency-bar ${esc(d.urgency)}"></div>
+      <div class="specialist-row">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div class="specialist-icon">${esc(d.specialist_icon||"🩺")}</div>
+          <div class="specialist-info">
+            <div class="specialist-name">${esc(d.specialist)}</div>
+            ${d.alternative_specialist?`<div class="alt-spec">Also consider: <strong>${esc(d.alternative_specialist)}</strong></div>`:""}
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge badge-urgency ${esc(d.urgency)}">${esc(URGENCY_LABEL[d.urgency]||d.urgency)}</span>
+          ${d.confidence?`<span class="badge badge-conf">${esc(CONF_LABEL[d.confidence]||d.confidence)}</span>`:""}
+        </div>
+      </div>
+      <p class="reason">${esc(d.reason)}</p>
+    </div>
+    <div class="result-body">
+      ${d.follow_up?`<div class="follow-up-box">💬 <span><strong>Follow-up question:</strong> ${esc(d.follow_up)}</span></div>`:""}
+      ${d.possible_conditions?.length?`<div class="section"><div class="section-head">🔬 Possible Conditions</div>${tags(d.possible_conditions)}</div>`:""}
+      <div class="grid2">
+        <div class="section"><div class="section-head">🏠 What You Can Do Now</div>${list(d.self_care,"care")}</div>
+        <div class="section"><div class="section-head">⚠️ Seek Help Sooner If</div>${list(d.warning_signs,"warn")}</div>
+      </div>
+      ${d.questions_for_doctor?.length?`<div class="section"><div class="section-head">💬 Questions to Ask Your Doctor</div>${list(d.questions_for_doctor,"qs")}</div>`:""}
+      <div class="disclaimer-box">${esc(d.disclaimer)}</div>
+      ${d.model_used?`<div class="model-tag">Powered by ${esc(d.model_used)}</div>`:""}
+      <div class="chat-section" id="chatSection">
+        <div class="chat-title">💬 Ask a Follow-up Question</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chatInput" placeholder="e.g. How long should I wait before seeing a doctor?" />
+          <button class="chat-send" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function updateStats() {
+  document.getElementById("statTotal").textContent = stats.total;
+  document.getElementById("statEmergency").textContent = stats.urgent;
+}
+
+function renderHistory() {
+  const el = document.getElementById("historyList");
+  if (!queryHistory.length) { el.innerHTML = `<div style="font-size:.82rem;color:var(--text3)">No queries yet.</div>`; return; }
+  el.innerHTML = queryHistory.slice().reverse().slice(0,6).map((h,i)=>`
+    <div class="history-item" onclick="reloadHistory(${queryHistory.length-1-i})">
+      <div class="history-dot ${esc(h.urgency)}"></div>
+      <div class="history-text">
+        <div class="history-sym">${esc(h.symptoms.slice(0,45))}${h.symptoms.length>45?"…":""}</div>
+        <div class="history-meta">${esc(h.specialist)} · ${h.time}</div>
+      </div>
+    </div>`).join("");
+}
+
+function reloadHistory(i) {
+  out.innerHTML = renderCard(queryHistory[i].result);
+  box.value = queryHistory[i].symptoms;
+  updateCount();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function clearAll() {
+  box.value=""; err.textContent=""; out.innerHTML="";
+  updateCount();
+  document.getElementById("clearBtn").style.display="none";
+}
+
+// Loader animation
+let loaderInterval;
+const loaderMsgs = ["Analyzing your symptoms…","Consulting AI model…","Preparing your results…"];
+function startLoader() {
+  loader.classList.add("active");
+  let step = 0, msg = 0;
+  loaderInterval = setInterval(()=>{
+    document.querySelectorAll(".loader-step").forEach((s,i)=>s.classList.toggle("active",i<=step));
+    step = (step+1)%3;
+    document.getElementById("loaderText").textContent = loaderMsgs[msg%3]; msg++;
+  }, 900);
+}
+function stopLoader() { loader.classList.remove("active"); clearInterval(loaderInterval); }
+
+// Voice input
+const voiceBtn = document.getElementById("voiceBtn");
+let recognition;
+if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = "en-IN";
+  recognition.onresult = e => {
+    box.value = Array.from(e.results).map(r=>r[0].transcript).join("");
+    updateCount();
+  };
+  recognition.onend = () => { voiceBtn.classList.remove("recording"); voiceBtn.textContent = "🎤 Voice"; };
+  voiceBtn.addEventListener("click", () => {
+    if (voiceBtn.classList.contains("recording")) { recognition.stop(); return; }
+    voiceBtn.classList.add("recording"); voiceBtn.textContent = "⏹ Stop";
+    recognition.start();
+  });
+} else {
+  voiceBtn.style.display = "none";
+}
+
+// Main analyze
+go.addEventListener("click", async () => {
+  const symptoms = box.value.trim();
+  err.textContent = ""; out.innerHTML = "";
+  startLoader(); go.disabled = true; go.textContent = "Analyzing…";
+  const model = document.getElementById("modelSelect").value;
+
+  try {
+    const res = await fetch("/analyze", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({symptoms, history:sessionHistory, model}),
+    });
+    const d = await res.json();
+    stopLoader();
+    if (!res.ok) { err.textContent = d.error||"Something went wrong."; return; }
+
+    out.innerHTML = renderCard(d);
+    document.getElementById("clearBtn").style.display = "inline-flex";
+
+    sessionHistory.push({role:"user",content:symptoms});
+    sessionHistory.push({role:"assistant",content:JSON.stringify(d)});
+
+    stats.total++;
+    if (d.urgency==="high"||d.urgency==="emergency") stats.urgent++;
+    updateStats();
+
+    queryHistory.push({symptoms, specialist:d.specialist, urgency:d.urgency, result:d,
+      time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})});
+    renderHistory();
+
+    // focus chat input
+    setTimeout(()=>{ const ci=document.getElementById("chatInput"); if(ci) ci.focus(); },400);
+
+  } catch(e) {
+    stopLoader(); err.textContent = "Could not reach the server. Check your connection.";
+  } finally {
+    go.disabled=false; go.textContent="🔍 Find Specialist";
+  }
+});
+
+// Chat follow-up
+async function sendChat() {
+  const input = document.getElementById("chatInput");
+  const msgs = document.getElementById("chatMessages");
+  const message = input.value.trim();
+  if (!message) return;
+  const model = document.getElementById("modelSelect").value;
+
+  msgs.innerHTML += `<div class="msg user">${esc(message)}</div>`;
+  msgs.innerHTML += `<div class="msg bot typing" id="typing">Thinking…</div>`;
+  input.value = ""; msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const res = await fetch("/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({message, history:sessionHistory, model}),
+    });
+    const d = await res.json();
+    document.getElementById("typing")?.remove();
+    const reply = d.reply||d.error||"Sorry, I could not respond.";
+    msgs.innerHTML += `<div class="msg bot">${esc(reply)}</div>`;
+    sessionHistory.push({role:"user",content:message});
+    sessionHistory.push({role:"assistant",content:reply});
+  } catch {
+    document.getElementById("typing")?.remove();
+    msgs.innerHTML += `<div class="msg bot">Could not reach server.</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key==="Enter" && (e.ctrlKey||e.metaKey) && document.activeElement===box) go.click();
+  if (e.key==="Enter" && document.activeElement?.id==="chatInput") sendChat();
+});
+
+// Dark mode
+const themeBtn = document.getElementById("themeBtn");
+const saved = localStorage.getItem("theme")||"light";
+document.documentElement.setAttribute("data-theme", saved);
+themeBtn.textContent = saved==="dark"?"☀️":"🌙";
+themeBtn.addEventListener("click",()=>{
+  const t = document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",t);
+  localStorage.setItem("theme",t);
+  themeBtn.textContent = t==="dark"?"☀️":"🌙";
+});
+</script>
+</body>
+</html>
